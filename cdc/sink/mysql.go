@@ -61,7 +61,8 @@ type mysqlSink struct {
 	unresolvedRowsMu sync.Mutex
 	unresolvedRows   map[string][]*model.RowChangedEvent
 
-	count int64
+	count             int64
+	lastGetStatusTime time.Time
 }
 
 func (s *mysqlSink) EmitResolvedEvent(ctx context.Context, ts uint64) error {
@@ -415,6 +416,17 @@ func (s *mysqlSink) PrintStatus(ctx context.Context) error {
 				zap.Int64("count", count),
 				zap.Int64("qps", qps))
 		}
+	}
+}
+
+func (s *mysqlSink) GetStatus(ctx context.Context) sinkStatus {
+	now := time.Now()
+	seconds := now.Unix() - s.lastGetStatusTime.Unix()
+	s.lastGetStatusTime = now
+	return sinkStatus{
+		ID:    s.params.changefeedID,
+		Count: s.count,
+		QPS:   s.count / seconds,
 	}
 }
 

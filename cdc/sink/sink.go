@@ -32,6 +32,12 @@ const (
 	OptCaptureID    = "_capture_id"
 )
 
+type sinkStatus struct {
+	ID    string
+	Count int64
+	QPS   int64
+}
+
 // Sink is an abstraction for anything that a changefeed may emit into.
 type Sink interface {
 	// EmitResolvedEvent saves the global resolved to the sink backend
@@ -48,6 +54,8 @@ type Sink interface {
 	Run(ctx context.Context) error
 	// PrintStatus prints necessary status periodically
 	PrintStatus(ctx context.Context) error
+	// GetStatus returns the status is collected recently
+	GetStatus(ctx context.Context) sinkStatus
 }
 
 // DSNScheme is the scheme name of DSN

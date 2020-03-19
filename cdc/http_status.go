@@ -66,6 +66,7 @@ type status struct {
 	GitHash string `json:"git_hash"`
 	ID      string `json:"id"`
 	Pid     int    `json:"pid"`
+	QPS     int64  `json:"qps"`
 }
 
 func (s *Server) writeEtcdInfo(ctx context.Context, cli kv.CDCEtcdClient, w io.Writer) {
@@ -101,6 +102,11 @@ func (s *Server) handleStatus(w http.ResponseWriter, req *http.Request) {
 		Pid:     os.Getpid(),
 	}
 	if s.capture != nil {
+		var qps int64
+		for _, processer := range s.capture.processors {
+			qps += processer.sink.GetStatus(context.Background()).QPS
+		}
+		st.QPS = qps
 		st.ID = s.capture.info.ID
 	}
 	writeData(w, st)

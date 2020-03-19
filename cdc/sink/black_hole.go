@@ -55,6 +55,10 @@ func (b *blackHoleSink) PrintStatus(ctx context.Context) error {
 	return nil
 }
 
+func (b *blackHoleSink) GetStatus(ctx context.Context) sinkStatus {
+	return sinkStatus{}
+}
+
 func (b *blackHoleSink) Close() error {
 	return nil
 }

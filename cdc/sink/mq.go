@@ -31,7 +31,8 @@ type mqSink struct {
 
 	changefeedID string
 
-	count int64
+	count             int64
+	lastGetStatusTime time.Time
 }
 
 func newMqSink(mqProducer mqProducer.Producer, filter *util.Filter, opts map[string]string) *mqSink {
@@ -206,6 +207,17 @@ func (k *mqSink) PrintStatus(ctx context.Context) error {
 				zap.Int64("count", count),
 				zap.Int64("qps", qps))
 		}
+	}
+}
+
+func (k *mqSink) GetStatus(ctx context.Context) sinkStatus {
+	now := time.Now()
+	seconds := now.Unix() - k.lastGetStatusTime.Unix()
+	k.lastGetStatusTime = now
+	return sinkStatus{
+		ID:    k.changefeedID,
+		Count: k.count,
+		QPS:   k.count / seconds,
 	}
 }
 
